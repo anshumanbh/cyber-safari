@@ -1,3 +1,4 @@
 app.log
 security_kb/
 venv/
+__pycache__/
