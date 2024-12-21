@@ -2,6 +2,15 @@
 
 ![cyber-safari](./images/cybersafari.png)
 
+## High Level Overview
+
+![high-level-overview](./images/arch.png)
+
+* There is an application server that has some vulnerabilities.
+* There is an offensive agent that tries to exploit the vulnerabilities.
+* There is a RAG system that contains the security knowledge base and the security controls required to defend the vulnerabilities.
+* There is a defensive agent that tries to propose security controls (derived from the RAG system) to defend against the vulnerabilities.
+
 ## Prerequisites
 
 ```
