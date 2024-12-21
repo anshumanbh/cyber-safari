@@ -12,6 +12,16 @@ pip install -r requirements.txt
 
 `export OPENAI_API_KEY=<your-openai-api-key>`
 
+## Code Walkthrough
+
+* `security_docs/` contains the security documents used to create the RAG system.
+* `security_tool.py` contains the tool used to query the RAG system. The defense agent uses this tool to query the RAG system for security controls by importing it as`from security_tool import init_security_tool`
+* `hack_agent.py` contains the offensive agent code.
+* `defense_agent.py` contains the defensive agent code.
+* `rag_setup.py` contains the code to setup the RAG system.
+* `test_lab.py` contains the code to start the test lab.
+
+
 ## RAG Setup
 
 ```
