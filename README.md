@@ -19,7 +19,7 @@ python3 rag_setup.py
 ```
 This will create a directory called `security_kb` with the vector database in your root directory.
 
-## Running the test lab
+## Running the Test Lab
 
 ```
 python3 test_lab.py
