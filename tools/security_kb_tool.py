@@ -53,26 +53,4 @@ def init_security_tool() -> SecurityKnowledgeBaseTool:
         return SecurityKnowledgeBaseTool()
     except Exception as e:
         print(f"Error initializing security tool: {str(e)}")
-        return None
-
-# if __name__ == "__main__":
-#     # Test the tool
-#     tool = init_security_tool()
-#     if tool:
-#         test_queries = [
-#             "How to implement JWT authentication?",
-#             "What are the best practices for admin endpoint security?"
-#         ]
-        
-#         print("\nTesting security knowledge base tool:")
-#         for test_query in test_queries:
-#             print(f"\nQuery: {test_query}")
-#             response = tool.invoke({"query": test_query})
-#             if "error" in response:
-#                 print(f"Error: {response['error']}")
-#             else:
-#                 for result in response["results"]:
-#                     print(f"\nRelevance Score: {result['relevance_score']:.2f}")
-#                     print(f"Category: {result['metadata']['category']}")
-#                     print(f"Source: {result['metadata']['source_file']}")
-#                     print(f"Content Preview: {result['content'][:200]}...")
+        return None 
