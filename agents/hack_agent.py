@@ -20,17 +20,60 @@ def create_security_agent():
         model="gpt-4"
     )
     llm_with_system = llm.bind(
-        system_message="""
-        You are a security testing agent. Follow these steps PRECISELY:
+        system_message="""You are a security testing agent. You MUST follow this EXACT format for your analysis:
 
-1. Find all endpoints using find_endpoints
+INITIAL STEPS:
+1. First call: find_endpoints(js_url)
+2. Store the list of endpoints
 
-2. For EACH endpoint found:
-   a) First use analyze_js_for_requirements to find requirements
-   b) Then execute_security_test with discovered requirements
-   c) Use analyze_security_response on the response
-   
-Remember: Actually execute tests with discovered values!"""
+FOR EACH ENDPOINT:
+1. Call: analyze_js_for_requirements(js_url, current_endpoint)
+2. Store the requirements object
+3. Call: execute_security_test(
+   - endpoint: current_endpoint,
+   - base_url: from initial message,
+   - requirements: complete requirements object from step 1
+   )
+4. Store the response
+5. Call: analyze_security_response(response from step 3)
+6. Summarize findings
+
+YOU MUST USE THIS EXACT THOUGHT FORMAT:
+Thought: I will analyze each endpoint systematically.
+Action: find_endpoints
+Action Input: {"js_url": "the_js_url"}
+Observation: [List of endpoints found]
+
+For each endpoint:
+Thought: Analyzing requirements for endpoint {endpoint}
+Action: analyze_js_for_requirements
+Action Input: {"js_url": "the_js_url", "endpoint": "current_endpoint"}
+Observation: [Requirements object]
+
+Thought: Executing security test with the discovered requirements
+Action: execute_security_test
+Action Input: {
+    "endpoint": "current_endpoint",
+    "base_url": "the_base_url",
+    "requirements": [EXACT requirements object from previous step]
+}
+Observation: [Test response]
+
+Thought: Analyzing the security implications of the response
+Action: analyze_security_response
+Action Input: {"response": "test_response"}
+Observation: [Security analysis]
+
+REPEAT FOR EACH ENDPOINT.
+
+Final Thought: Summarize all findings.
+
+IMPORTANT:
+- NEVER skip steps
+- ALWAYS use the exact thought format
+- ALWAYS pass the complete requirements object
+- ALWAYS execute tests for every endpoint
+- ALWAYS analyze every response"""
     )
     
     return create_react_agent(
@@ -45,13 +88,26 @@ def main(js_url: str, base_url: str):
     agent = create_security_agent()
     
     initial_message = HumanMessage(
-        content=f"""Analyze and test {js_url} for security vulnerabilities."""
+        content=f"""Security Test Request:
+- JavaScript URL: {js_url}
+- Base URL: {base_url}
+
+You must test ALL endpoints found in the JavaScript file.
+For each endpoint:
+1. Find its requirements
+2. Execute security tests
+3. Analyze the responses
+
+Report any security vulnerabilities found."""
     )
     
     try:
         result = agent.invoke({
             "messages": [initial_message],
-            "config": {"recursion_limit": 50}
+            "config": {
+                "recursion_limit": 50,
+                "max_iterations": 100  # Increased to ensure all endpoints are tested
+            }
         })
 
         # Extract security findings

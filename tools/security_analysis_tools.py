@@ -33,7 +33,6 @@ def analyze_security_response(response: str) -> Dict[str, Any]:
         Return your analysis as a JSON object with these keys (do NOT use markdown formatting):
         {
             "vulnerability": <vulnerability_name>,
-            "severity": <severity_level>,
             "recommendations": <list of fix suggestions>
         }"""
         
@@ -50,7 +49,7 @@ def analyze_security_response(response: str) -> Dict[str, Any]:
         
         if analysis.get('vulnerability'):
             log_progress("Vuln Found:")
-            log_progress(f"  ⚠️  [{analysis['severity'].upper()}] {analysis['vulnerability']}")
+            log_progress(f"  ⚠️  {analysis['vulnerability']}")
         else:
             log_progress("No immediate vulnerabilities found.")
         
@@ -64,7 +63,9 @@ def execute_security_test(endpoint: str, base_url: str, requirements: Dict[str, 
     """
     Uses LLM to craft and execute security tests based on analyzed requirements.
     """
-    log_progress(f"Crafting security test for {endpoint} based on requirements")
+    log_progress(f"Starting security test execution for {endpoint}")
+    log_progress(f"Base URL: {base_url}")
+    log_progress(f"Requirements: {json.dumps(requirements, indent=2)}")
     
     try:
         llm = ChatOpenAI(
@@ -102,10 +103,17 @@ def execute_security_test(endpoint: str, base_url: str, requirements: Dict[str, 
         
         cmd.append(url)
         
-        log_progress(f"Executing test for {endpoint} with curl command: {cmd}")
+        log_progress(f"Executing curl command: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-        log_progress(f"Response: {result.stdout}")
-        log_progress(f"Test completed - Status: {result.stdout.split()[1] if ' ' in result.stdout else 'unknown'}")
+        
+        if result.stdout:
+            log_progress(f"Response received - Status: {result.stdout.split()[1] if ' ' in result.stdout else 'unknown'}")
+            log_progress(f"Response: {result.stdout}")
+        else:
+            log_progress("No response received from the server")
+            
+        if result.stderr:
+            log_progress(f"Errors during execution: {result.stderr}")
         
         return result.stdout
         
