@@ -16,7 +16,7 @@ def analyze_logs(log_content: str) -> Dict[str, Any]:
     Returns:
         Dictionary containing identified attack patterns and details
     """
-    log_progress("Analyzing application logs for attack patterns...")
+    log_progress("Analyzing application logs for attack patterns...", prefix="🛡️")
     
     try:
         llm = ChatOpenAI(
@@ -49,7 +49,7 @@ def analyze_logs(log_content: str) -> Dict[str, Any]:
         print("=" * 50)
         analysis = json.loads(response.content)
         
-        log_progress(f"Identified {analysis['attack_type']} attack targeting {analysis['target']}")
+        log_progress(f"Identified {analysis['attack_type']} attack targeting {analysis['target']}", prefix="🛡️")
         print("=" * 50)
         
         return analysis
@@ -69,24 +69,29 @@ def identify_security_controls(attack_analysis: Dict[str, Any]) -> Dict[str, Any
     Returns:
         Dictionary containing recommended security controls
     """
-    log_progress(f"Identifying security controls for {attack_analysis['attack_type']} attack...")
+    log_progress(f"Identifying security controls for {attack_analysis['attack_type']} attack...", prefix="🛡️")
     
     try:
-        # Initialize security knowledge base tool
+
         security_kb = init_security_tool()
+        if not security_kb:
+            raise ValueError("Failed to initialize security knowledge base")
         
-        # Craft query based on attack analysis
         query = f"""
         How to protect against {attack_analysis['attack_type']} attacks 
         targeting {attack_analysis['target']} where {attack_analysis['vulnerability']} 
         is being exploited?
         """
+
         log_progress(f"Query: {query}")
         print("=" * 50)
         
         # Query knowledge base
         controls = security_kb.invoke({"query": query})
-
+        
+        if 'results' not in controls:
+            raise ValueError("Security controls query returned invalid response")
+            
         log_progress(f"Found {len(controls['results'])} relevant security controls")
         log_progress(f"Controls: {controls['results']}")
         print("=" * 50)
@@ -99,7 +104,6 @@ def identify_security_controls(attack_analysis: Dict[str, Any]) -> Dict[str, Any
     except Exception as e:
         log_progress(f"❌ Error identifying controls: {str(e)}")
         return {"error": str(e)}
-
 @tool
 def generate_recommendations(security_info: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -111,10 +115,10 @@ def generate_recommendations(security_info: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Dictionary containing implementation recommendations
     """
-    log_progress("Generating security control recommendations...")
-    print("=" * 50)
+    log_progress("Generating security control recommendations...", prefix="🛡️")
     
     try:
+
         llm = ChatOpenAI(
             temperature=0,
             model="gpt-4"
@@ -136,13 +140,13 @@ def generate_recommendations(security_info: Dict[str, Any]) -> Dict[str, Any]:
         - configuration_changes: required configuration updates
         """
         
+        log_progress(f"Generating recommendations for {security_info['attack_analysis']['attack_type']} attack...", prefix="🛡️")
         log_progress(f"Recommendations Prompt: {recommendations_prompt}")
         print("=" * 50)
-
         response = llm.invoke(recommendations_prompt)
         recommendations = json.loads(response.content)
         
-        log_progress(f"Recommendations: {recommendations}")
+        log_progress(f"Generated Recommendations: {recommendations}")
         print("=" * 50)
         
         return recommendations
